@@ -1,0 +1,15 @@
+[Unit]
+Description=Shchurman Telegram Bot 24/7 Service
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/shchurman
+ExecStart=/home/ubuntu/shchurman/venv/bin/python -m bot.main
+Restart=always
+RestartSec=5
+EnvironmentFile=/home/ubuntu/shchurman/.env
+
+[Install]
+WantedBy=multi-user.target

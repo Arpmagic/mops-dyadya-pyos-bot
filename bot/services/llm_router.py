@@ -1,0 +1,140 @@
+import logging
+import itertools
+from typing import List, Dict, Tuple, Optional, Any
+from bot.services.openai_client import openai_service
+from bot.services.deepseek_client import deepseek_service
+from bot.services.anthropic_client import anthropic_service
+from bot.services.gemini_client import gemini_service
+from bot.services.memory import memory
+
+logger = logging.getLogger(__name__)
+
+class LLMRoutesManager:
+    def __init__(self):
+        self.providers = {
+            "gemini": {
+                "service": gemini_service,
+                "default_model": "gemini-3.5-flash",
+                "display_name": "Google Gemini (Flash)",
+            },
+            "deepseek": {
+                "service": deepseek_service,
+                "default_model": "deepseek-chat",
+                "display_name": "DeepSeek (V3/Chat)",
+            },
+            "openai": {
+                "service": openai_service,
+                "default_model": "gpt-4o-mini",
+                "display_name": "OpenAI (GPT-4o mini)",
+            },
+            "anthropic": {
+                "service": anthropic_service,
+                "default_model": "claude-3-5-haiku-20241022",
+                "display_name": "Claude 3.5 Haiku",
+            }
+        }
+        self._provider_cycle = itertools.cycle(["gemini", "deepseek", "openai", "anthropic"])
+
+    def get_available_providers(self) -> List[str]:
+        """Список доступних провайдерів з хоча б одним не заблокованим ключем."""
+        return [
+            name for name, info in self.providers.items()
+            if info["service"].is_available
+        ]
+
+    async def generate_response(
+        self,
+        chat_id: int,
+        user_id: Optional[int],
+        system_prompt: str,
+        messages: List[Dict[str, str]],
+        mode: str = "auto",
+    ) -> Tuple[str, str, str]:
+        """
+        Генерує відповідь з автоматичним пулом ключів та Fallback.
+        """
+        available = self.get_available_providers()
+        if not available:
+            # Якщо всі позначені як dead, скидаємо стан і пробуємо Gemini
+            available = ["gemini"]
+
+        attempts_order = []
+        if mode in self.providers and mode in available:
+            attempts_order = [mode] + [p for p in available if p != mode]
+        else:
+            # Завжди надаємо пріоритет робочому провайдеру (Gemini)
+            if "gemini" in available:
+                attempts_order = ["gemini"] + [p for p in available if p != "gemini"]
+            else:
+                attempts_order = available
+
+        last_error = None
+        for provider_name in attempts_order:
+            provider_info = self.providers.get(provider_name)
+            if not provider_info:
+                continue
+
+            service = provider_info["service"]
+            model = provider_info["default_model"]
+
+            try:
+                response_text = await service.generate_response(
+                    system_prompt=system_prompt,
+                    messages=messages,
+                    model=model
+                )
+
+                if response_text:
+                    await memory.log_usage_stat(
+                        chat_id=chat_id,
+                        user_id=user_id,
+                        provider=provider_name,
+                        is_success=True
+                    )
+                    return response_text, provider_name, model
+
+            except Exception as e:
+                logger.warning(f"[{provider_name.upper()}] Помилка: {e}. Перемикаємось на наступний...")
+                await memory.log_usage_stat(
+                    chat_id=chat_id,
+                    user_id=user_id,
+                    provider=provider_name,
+                    is_success=False,
+                    error_message=str(e)[:250]
+                )
+                last_error = e
+                continue
+
+        error_msg = f"Усі AI-провайдери повернули помилки. Остання: {last_error}"
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
+
+    async def check_all_keys(self) -> Dict[str, Dict[str, Any]]:
+        results = {}
+        for name, info in self.providers.items():
+            service = info["service"]
+            if not service.is_available:
+                results[name] = {
+                    "display_name": info["display_name"],
+                    "status": "❌ Немає активних ключів / вичерпано",
+                    "ok": False
+                }
+                continue
+
+            try:
+                is_ok = await service.check_health()
+                results[name] = {
+                    "display_name": info["display_name"],
+                    "status": "✅ Працює (OK)" if is_ok else "⚠️ Помилка лімітів/балансу",
+                    "ok": is_ok
+                }
+            except Exception as e:
+                results[name] = {
+                    "display_name": info["display_name"],
+                    "status": f"❌ {str(e)[:60]}",
+                    "ok": False
+                }
+
+        return results
+
+llm_router = LLMRoutesManager()
