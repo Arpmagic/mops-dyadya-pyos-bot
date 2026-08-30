@@ -5,9 +5,10 @@
   <img src="https://img.shields.io/badge/Aiogram-3.x-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Aiogram" />
   <img src="https://img.shields.io/badge/Multi--LLM-Gemini%20%7C%20DeepSeek%20%7C%20GPT--4o%20%7C%20Claude-FF6F00?style=for-the-badge" alt="Multi-LLM" />
   <img src="https://img.shields.io/badge/SQLite-Async%20Memory-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
-  <img src="https://img.shields.io/badge/Uptime-24%2F7%20Free%20Tier-28A745?style=for-the-badge" alt="Uptime" />
   <img src="https://img.shields.io/badge/Age-18%2B%20Only-red?style=for-the-badge" alt="18+" />
   <img src="https://img.shields.io/badge/License-MIT-blue?style=for-the-badge" alt="License" />
+  <a href="https://buymeacoffee.com/arpmag"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-yellow?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me a Coffee" /></a>
+  <a href="https://send.monobank.ua/jar/8HBjkw7ZT5"><img src="https://img.shields.io/badge/Monobank-Банка-black?style=for-the-badge&logo=monzo&logoColor=white" alt="Monobank" /></a>
 </p>
 
 > [!WARNING]
@@ -238,6 +239,45 @@ mops_bot/
 ├── requirements.txt       # Залежності Python
 └── README.md              # Документація проєкту
 ```
+
+---
+
+## 🍖 Підтримати проєкт (Донат на м'ясо та чифір Мопсу)
+
+Якщо вам сподобався цей бот і ви хочете підтримати автора копійкою на чай/чифір, сосиски та оплату серверів:
+
+### 💳 Швидкі донати:
+* 🐱 **Monobank (Банка):** [send.monobank.ua/jar/8HBjkw7ZT5](https://send.monobank.ua/jar/8HBjkw7ZT5)
+* 💳 **Номер картки Банки:** `4874 1000 3253 5083`
+* ☕ **Buy Me a Coffee:** [buymeacoffee.com/arpmag](https://buymeacoffee.com/arpmag)
+* 💸 **Donatello (Віджет стрімера):** [donatello.to/widget/...](https://donatello.to/widget/6a943d6f5649df604b787dd1/token/0b77d459fc1e8838cd9fd6b94fa86c78)
+
+---
+
+### 💎 Криптовалюта (Crypto):
+| Мережа / Валюта | Адреса гаманця |
+|---|---|
+| 🟡 **BNB Smart Chain (BEP20 / BNB / USDT)** | `0x71d9C5f2cF8a8d7cF7a037EF51D1844D2f2C6dDe` |
+| 🟣 **Solana (SOL / SPL Tokens)** | `5WjFfpV9zQ4mtTGVceQ1SpDMEAHwX1RwdhTzZDgCiznA` |
+| 🔴 **Tron (TRC20 / USDT / TRX)** | `TXot4qHHkVgrWqq44EQb2qsf1DM55ybMDd` |
+| 🔷 **Ethereum (ERC20 / ETH / USDT)** | `0x71d9C5f2cF8a8d7cF7a037EF51D1844D2f2C6dDe` |
+| 🟠 **Bitcoin (BTC)** | `bc1qjlrlelxw3tt80xnsq8xgtazas6tlzre2txav42` |
+
+<details>
+<summary>📱 <b>Натисніть тут, щоб переглянути QR-коди для сканування</b></summary>
+<br>
+
+<p align="center">
+  <b>Buy Me a Coffee</b><br>
+  <img src="assets/qr/buymeacoffee.png" width="220" alt="Buy Me a Coffee QR" /><br><br>
+  <b>BNB Smart Chain</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>Solana (SOL)</b><br>
+  <img src="assets/qr/bnb.jpg" width="200" alt="BNB QR" /> &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/qr/solana.jpg" width="200" alt="Solana QR" /><br><br>
+  <b>Tron (TRC20 USDT)</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>Ethereum (ETH)</b><br>
+  <img src="assets/qr/tron.png" width="200" alt="Tron QR" /> &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/qr/ethereum.jpg" width="200" alt="Ethereum QR" />
+</p>
+</details>
 
 ---
 
