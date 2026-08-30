@@ -1,4 +1,5 @@
 import logging
+import aiogram
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message
@@ -54,3 +55,35 @@ async def cmd_check_keys(message: Message):
     except Exception as e:
         logger.error(f"Error checking keys: {e}")
         await status_msg.edit_text(f"❌ Помилка під час діагностики: `{e}`", parse_mode="Markdown")
+
+@router.message(Command("broadcast"))
+async def cmd_broadcast(message: Message, bot: aiogram.Bot):
+    if not is_admin(message.from_user.id):
+        return
+
+    text_to_send = message.text.replace("/broadcast", "").strip()
+    if not text_to_send and not message.photo and not message.video:
+        await message.answer("⚠️ Введіть текст, фото або відео для розсилки.\nПриклад: `/broadcast Усім привіт!`")
+        return
+
+    chats = await memory.get_all_chats()
+    if not chats:
+        await message.answer("База чатів порожня.")
+        return
+
+    await message.answer(f"🚀 Починаю розсилку для {len(chats)} чатів...")
+    
+    success, failed = 0, 0
+    for chat_id in chats:
+        try:
+            if message.photo:
+                await bot.send_photo(chat_id, message.photo[-1].file_id, caption=message.caption)
+            elif message.video:
+                await bot.send_video(chat_id, message.video.file_id, caption=message.caption)
+            else:
+                await bot.send_message(chat_id, text_to_send)
+            success += 1
+        except Exception:
+            failed += 1
+
+    await message.answer(f"✅ **Розсилка завершена!**\nУспішно: `{success}`\nПомилок: `{failed}`", parse_mode="Markdown")

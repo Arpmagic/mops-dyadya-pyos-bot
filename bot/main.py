@@ -22,6 +22,7 @@ from aiogram.client.default import DefaultBotProperties
 
 from bot.config import settings
 from bot.services.memory import memory
+from bot.middlewares.throttling import ThrottlingMiddleware
 from bot.handlers import main_router
 
 # Налаштування логування
@@ -61,6 +62,7 @@ async def main():
         default=DefaultBotProperties(parse_mode=None)
     )
     dp = Dispatcher()
+    dp.message.middleware(ThrottlingMiddleware(rate_limit=3.0))
     dp.include_router(main_router)
 
     # 3. Реєстрація команд в меню

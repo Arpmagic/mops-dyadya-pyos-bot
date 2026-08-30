@@ -175,4 +175,11 @@ class MemoryManager:
                 ]
             }
 
+    async def get_all_chats(self) -> List[int]:
+        """Отримати список усіх унікальних chat_id."""
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor = await db.execute("SELECT DISTINCT chat_id FROM chat_settings")
+            rows = await cursor.fetchall()
+            return [r[0] for r in rows]
+
 memory = MemoryManager()

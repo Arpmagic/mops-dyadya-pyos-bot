@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     DEFAULT_ROLE: str = "mops"
     DEFAULT_ROUTER_MODE: str = "auto"
-    MAX_CONTEXT_MESSAGES: int = 5
+    MAX_CONTEXT_MESSAGES: int = 15
     TEMPERATURE: float = 0.92
     DATABASE_PATH: str = "data/bot_database.sqlite"
     LOG_LEVEL: str = "INFO"

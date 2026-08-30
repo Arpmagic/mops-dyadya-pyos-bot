@@ -38,10 +38,20 @@ class GeminiClient:
         contents = []
         for msg in messages:
             role = "user" if msg["role"] == "user" else "model"
-            if msg["content"].strip():
+            parts = []
+            if msg.get("content", "").strip():
+                parts.append({"text": msg["content"]})
+            if msg.get("image_base64"):
+                parts.append({
+                    "inlineData": {
+                        "mimeType": "image/jpeg",
+                        "data": msg["image_base64"]
+                    }
+                })
+            if parts:
                 contents.append({
                     "role": role,
-                    "parts": [{"text": msg["content"]}]
+                    "parts": parts
                 })
 
         if not contents:

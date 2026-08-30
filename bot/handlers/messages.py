@@ -9,6 +9,8 @@ from bot.config import settings
 from bot.services.memory import memory
 from bot.services.llm_router import llm_router
 from bot.prompts.personas import get_role_prompt
+import base64
+import io
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -111,7 +113,7 @@ async def handle_text_message(message: Message, bot: Bot):
         # Отримуємо налаштування ролі та моделі для поточного чату
         current_role = await memory.get_chat_role(message.chat.id)
         router_mode = await memory.get_chat_model(message.chat.id)
-        system_prompt = get_role_prompt(current_role)
+        system_prompt = get_role_prompt(current_role, cleaned_prompt)
 
         # Отримуємо історію діалогу
         history = await memory.get_context(message.chat.id)
@@ -157,3 +159,74 @@ async def handle_text_message(message: Message, bot: Bot):
             provider_used="vault"
         )
         await send_split_message(message, fallback_text)
+
+
+
+
+@router.message(F.photo)
+async def handle_photo_message(message: Message, bot: Bot):
+    bot_user = await bot.get_me()
+    
+    if not should_respond(message, bot_user.id, bot_user.username):
+        return
+
+    await bot.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
+
+    image_base64 = None
+    user_text = message.caption or ""
+
+    try:
+        # Обробка фотографії
+        photo = message.photo[-1]
+        file = await bot.get_file(photo.file_id)
+        file_bytes = io.BytesIO()
+        await bot.download_file(file.file_path, file_bytes)
+        image_base64 = base64.b64encode(file_bytes.getvalue()).decode("utf-8")
+        
+        if not user_text:
+            user_text = "Оціни і жорстко просмаж цю фотографію!"
+
+        cleaned_prompt = clean_user_prompt(user_text, bot_user.username)
+        if not cleaned_prompt:
+            cleaned_prompt = user_text
+
+        current_role = await memory.get_chat_role(message.chat.id)
+        router_mode = await memory.get_chat_model(message.chat.id)
+        system_prompt = get_role_prompt(current_role, cleaned_prompt)
+
+        history = await memory.get_context(message.chat.id)
+        
+        msg_payload = {"role": "user", "content": cleaned_prompt}
+        if image_base64:
+            msg_payload["image_base64"] = image_base64
+            
+        messages_payload = history + [msg_payload]
+
+        response_text, provider_name, model_name = await llm_router.generate_response(
+            chat_id=message.chat.id,
+            user_id=message.from_user.id if message.from_user else None,
+            system_prompt=system_prompt,
+            messages=messages_payload,
+            mode=router_mode
+        )
+
+        await memory.add_message(
+            chat_id=message.chat.id,
+            user_id=message.from_user.id if message.from_user else None,
+            role="user",
+            content=cleaned_prompt
+        )
+        await memory.add_message(
+            chat_id=message.chat.id,
+            user_id=bot_user.id,
+            role="assistant",
+            content=response_text,
+            provider_used=provider_name
+        )
+
+        await send_split_message(message, response_text)
+
+    except Exception as e:
+        logger.error(f"Помилка обробки медіа: {e}")
+        await message.reply("Якась лажа з цією фоткою, скинь нормально!")
+
