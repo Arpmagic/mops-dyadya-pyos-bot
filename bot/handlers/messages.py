@@ -1,7 +1,7 @@
 import re
 import logging
 from aiogram import Router, F, Bot
-from aiogram.types import Message
+from aiogram.types import Message, LinkPreviewOptions
 from aiogram.enums import ChatType, ChatAction
 from aiogram.exceptions import TelegramBadRequest
 
@@ -54,14 +54,15 @@ def clean_user_prompt(text: str, bot_username: str) -> str:
     return text
 
 async def send_split_message(message: Message, text: str):
-    """Відправляє довгі повідомлення частинами (ліміт Telegram 4096 символів)."""
+    """Відправляє довгі повідомлення частинами (ліміт Telegram 4096 символів) з відключеним прев'ю посилань."""
     MAX_LEN = 3900
+    no_preview = LinkPreviewOptions(is_disabled=True)
     if len(text) <= MAX_LEN:
         try:
-            await message.reply(text, parse_mode="Markdown")
+            await message.reply(text, parse_mode="Markdown", link_preview_options=no_preview)
         except TelegramBadRequest:
             # Якщо виникла помилка форматування Markdown, надсилаємо як звичайний текст
-            await message.reply(text)
+            await message.reply(text, link_preview_options=no_preview)
         return
 
     # Розбиваємо на частини
@@ -77,9 +78,9 @@ async def send_split_message(message: Message, text: str):
 
     for p in parts:
         try:
-            await message.reply(p, parse_mode="Markdown")
+            await message.reply(p, parse_mode="Markdown", link_preview_options=no_preview)
         except TelegramBadRequest:
-            await message.reply(p)
+            await message.reply(p, link_preview_options=no_preview)
 
 @router.channel_post()
 async def ignore_channel_wall_posts(message: Message):

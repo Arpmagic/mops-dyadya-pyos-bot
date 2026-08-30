@@ -1,7 +1,7 @@
 import random
 from aiogram import Router, F, Bot
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, LinkPreviewOptions
 from aiogram.exceptions import TelegramBadRequest
 from bot.prompts.personas import PERSONAS, get_role_info
 from bot.services.memory import memory
@@ -10,11 +10,12 @@ from bot.handlers.messages import handle_text_message
 router = Router()
 
 async def send_reply(message: Message, text: str, reply_markup=None):
-    """Відправляє відповідь строго в тред повідомлення/коментарів."""
+    """Відправляє відповідь строго в тред повідомлення/коментарів з відключеним прев'ю посилань."""
+    no_preview = LinkPreviewOptions(is_disabled=True)
     try:
-        await message.reply(text, reply_markup=reply_markup, parse_mode="Markdown")
+        await message.reply(text, reply_markup=reply_markup, parse_mode="Markdown", link_preview_options=no_preview)
     except TelegramBadRequest:
-        await message.reply(text, reply_markup=reply_markup)
+        await message.reply(text, reply_markup=reply_markup, link_preview_options=no_preview)
 
 def get_role_keyboard() -> InlineKeyboardMarkup:
     buttons = []
