@@ -42,12 +42,16 @@ class GeminiClient:
             if msg.get("content", "").strip():
                 parts.append({"text": msg["content"]})
             if msg.get("image_base64"):
-                parts.append({
-                    "inlineData": {
-                        "mimeType": "image/jpeg",
-                        "data": msg["image_base64"]
-                    }
-                })
+                imgs = msg["image_base64"]
+                if isinstance(imgs, str):
+                    imgs = [imgs]
+                for img_b64 in imgs:
+                    parts.append({
+                        "inlineData": {
+                            "mimeType": "image/jpeg",
+                            "data": img_b64
+                        }
+                    })
             if parts:
                 contents.append({
                     "role": role,

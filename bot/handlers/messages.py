@@ -164,7 +164,7 @@ async def handle_text_message(message: Message, bot: Bot):
 
 
 @router.message(F.photo)
-async def handle_photo_message(message: Message, bot: Bot):
+async def handle_photo_message(message: Message, bot: Bot, album: list[Message] = None):
     bot_user = await bot.get_me()
     
     if not should_respond(message, bot_user.id, bot_user.username):
@@ -172,19 +172,26 @@ async def handle_photo_message(message: Message, bot: Bot):
 
     await bot.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
 
-    image_base64 = None
+    image_base64_list = []
     user_text = message.caption or ""
 
+    messages_to_process = album if album else [message]
+
     try:
-        # Обробка фотографії
-        photo = message.photo[-1]
-        file = await bot.get_file(photo.file_id)
-        file_bytes = io.BytesIO()
-        await bot.download_file(file.file_path, file_bytes)
-        image_base64 = base64.b64encode(file_bytes.getvalue()).decode("utf-8")
+        # Збираємо всі фото та підписи
+        for msg in messages_to_process:
+            if msg.caption and msg.caption != user_text:
+                user_text += "\n" + msg.caption
+            
+            if msg.photo:
+                photo = msg.photo[-1]
+                file = await bot.get_file(photo.file_id)
+                file_bytes = io.BytesIO()
+                await bot.download_file(file.file_path, file_bytes)
+                image_base64_list.append(base64.b64encode(file_bytes.getvalue()).decode("utf-8"))
         
-        if not user_text:
-            user_text = "Оціни і жорстко просмаж цю фотографію!"
+        if not user_text.strip():
+            user_text = "Опиши що зображено на цьому фото або цих фотографіях!"
 
         cleaned_prompt = clean_user_prompt(user_text, bot_user.username)
         if not cleaned_prompt:
@@ -197,8 +204,8 @@ async def handle_photo_message(message: Message, bot: Bot):
         history = await memory.get_context(message.chat.id)
         
         msg_payload = {"role": "user", "content": cleaned_prompt}
-        if image_base64:
-            msg_payload["image_base64"] = image_base64
+        if image_base64_list:
+            msg_payload["image_base64"] = image_base64_list
             
         messages_payload = history + [msg_payload]
 
