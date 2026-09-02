@@ -85,13 +85,26 @@ class LLMRoutesManager:
                 )
 
                 if response_text:
+                    import re
+                    # Remove <thinking>...</thinking> and <thought>...</thought> tags and their contents
+                    cleaned_text = re.sub(r'<thinking>.*?</thinking>', '', response_text, flags=re.DOTALL)
+                    cleaned_text = re.sub(r'<thought>.*?</thought>', '', cleaned_text, flags=re.DOTALL)
+                    
+                    # Also sometimes they just write "Thinking process:" or "Thoughts:" without tags if the instruction wasn't strict enough
+                    # but since we strictly instruct tags, we just remove the tags.
+                    cleaned_text = cleaned_text.strip()
+                    
+                    # Fallback if cleaned_text is empty (meaning it put EVERYTHING in thinking)
+                    if not cleaned_text:
+                        cleaned_text = response_text
+                        
                     await memory.log_usage_stat(
                         chat_id=chat_id,
                         user_id=user_id,
                         provider=provider_name,
                         is_success=True
                     )
-                    return response_text, provider_name, model
+                    return cleaned_text, provider_name, model
 
             except Exception as e:
                 logger.warning(f"[{provider_name.upper()}] Помилка: {e}. Перемикаємось на наступний...")
