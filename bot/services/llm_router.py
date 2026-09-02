@@ -86,9 +86,12 @@ class LLMRoutesManager:
 
                 if response_text:
                     import re
-                    # Remove <thinking>...</thinking> and <thought>...</thought> tags and their contents
-                    cleaned_text = re.sub(r'<thinking>.*?</thinking>', '', response_text, flags=re.DOTALL)
-                    cleaned_text = re.sub(r'<thought>.*?</thought>', '', cleaned_text, flags=re.DOTALL)
+                    # Remove <thinking>...</thinking> and <thought>...</thought> tags and their contents (case-insensitive)
+                    cleaned_text = re.sub(r'<[Tt]hinking>.*?</[Tt]hinking>', '', response_text, flags=re.DOTALL | re.IGNORECASE)
+                    cleaned_text = re.sub(r'<[Tt]hought>.*?</[Tt]hought>', '', cleaned_text, flags=re.DOTALL | re.IGNORECASE)
+                    cleaned_text = re.sub(r'<[Tt]houghts>.*?</[Tt]houghts>', '', cleaned_text, flags=re.DOTALL | re.IGNORECASE)
+                    # Sometimes the LLM fails to close the tag or uses formatting like ```<thinking>
+                    cleaned_text = re.sub(r'```.*?<thinking>.*?</thinking>.*?```', '', cleaned_text, flags=re.DOTALL | re.IGNORECASE)
                     
                     # Also sometimes they just write "Thinking process:" or "Thoughts:" without tags if the instruction wasn't strict enough
                     # but since we strictly instruct tags, we just remove the tags.
