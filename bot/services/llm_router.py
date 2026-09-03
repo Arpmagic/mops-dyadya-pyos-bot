@@ -6,6 +6,7 @@ from bot.services.deepseek_client import deepseek_service
 from bot.services.anthropic_client import anthropic_service
 from bot.services.gemini_client import gemini_service
 from bot.services.memory import memory
+from bot.services.rag_service import rag_service
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +68,17 @@ class LLMRoutesManager:
                 attempts_order = ["gemini"] + [p for p in available if p != "gemini"]
             else:
                 attempts_order = available
+
+        # --- RAG INTEGRATION ---
+        last_user_msg = next((m["content"] for m in reversed(messages) if m["role"] == "user"), "")
+        if last_user_msg:
+            try:
+                retrieved_lore = await rag_service.get_relevant_lore(last_user_msg)
+                if retrieved_lore:
+                    system_prompt += "\n\n[ДИНАМИЧЕСКАЯ СПРАВКА ИЗ ЭНЦИКЛОПЕДИИ ЛОРА (ДЛЯ КОНТЕКСТА)]\n" + retrieved_lore + "\n[КОНЕЦ СПРАВКИ. ИСПОЛЬЗУЙ ЭТИ ДАННЫЕ ДЛЯ ОТВЕТА, ЕСЛИ ОНИ ПОДХОДЯТ.]"
+            except Exception as e:
+                logger.error(f"[RAG] Error during retrieval: {e}")
+        # -----------------------
 
         last_error = None
         for provider_name in attempts_order:
