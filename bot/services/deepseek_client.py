@@ -39,7 +39,7 @@ class DeepSeekClient:
                 model=model,
                 messages=payload_messages,
                 temperature=temp,
-                max_tokens=120,
+                max_tokens=2000,
             )
             content = response.choices[0].message.content
             return content.strip() if content else ""

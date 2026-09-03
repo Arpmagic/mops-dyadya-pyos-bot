@@ -113,9 +113,9 @@ class LLMRoutesManager:
                     # but since we strictly instruct tags, we just remove the tags.
                     cleaned_text = cleaned_text.strip()
                     
-                    # Fallback if cleaned_text is empty (meaning it put EVERYTHING in thinking)
+                    # If cleaned_text is empty, it means the model ONLY output thoughts and got cut off or failed to write the answer.
                     if not cleaned_text:
-                        cleaned_text = response_text
+                        raise ValueError("Model hit max_tokens mid-thought or failed to provide a final response.")
                         
                     await memory.log_usage_stat(
                         chat_id=chat_id,
