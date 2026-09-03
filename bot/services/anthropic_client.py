@@ -43,7 +43,7 @@ class AnthropicClient:
                 model=model,
                 system=system_prompt,
                 messages=claude_messages,
-                max_tokens=2000,
+                max_tokens=4000,
             )
             text_blocks = [b.text for b in response.content if hasattr(b, "text")]
             return "".join(text_blocks).strip()

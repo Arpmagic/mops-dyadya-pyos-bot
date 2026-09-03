@@ -39,7 +39,7 @@ class OpenAIClient:
                 model=model,
                 messages=payload_messages,
                 temperature=temp,
-                max_tokens=2000,
+                max_tokens=4000,
             )
             content = response.choices[0].message.content
             return content.strip() if content else ""

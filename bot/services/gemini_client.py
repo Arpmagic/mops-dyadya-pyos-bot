@@ -69,7 +69,7 @@ class GeminiClient:
             "generationConfig": {
                 "temperature": temp,
                 "topP": 0.95,
-                "maxOutputTokens": 1000
+                "maxOutputTokens": 4000
             },
             "safetySettings": [
                 {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
