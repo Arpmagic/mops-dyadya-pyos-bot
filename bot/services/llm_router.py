@@ -99,7 +99,11 @@ class LLMRoutesManager:
                 if response_text:
                     import re
                     # Remove <thinking>...</thinking> and <thought>...</thought> tags and their contents (case-insensitive)
-                    cleaned_text = re.sub(r'<[Tt]hinking>.*?</[Tt]hinking>', '', response_text, flags=re.DOTALL | re.IGNORECASE)
+                    # Strip closed XML tags
+        cleaned_text = re.sub(r'<([a-zA-Z0-9_-]+)>.*?</\1>', '', response_text, flags=re.DOTALL | re.IGNORECASE)
+        # Strip unclosed XML tags that reach the end of the text
+        cleaned_text = re.sub(r'<([a-zA-Z0-9_-]+)>.*$', '', cleaned_text, flags=re.DOTALL | re.IGNORECASE)
+        cleaned_text = cleaned_text.strip()
                     cleaned_text = re.sub(r'<[Tt]hought>.*?</[Tt]hought>', '', cleaned_text, flags=re.DOTALL | re.IGNORECASE)
                     cleaned_text = re.sub(r'<[Tt]houghts>.*?</[Tt]houghts>', '', cleaned_text, flags=re.DOTALL | re.IGNORECASE)
                     # Sometimes the LLM fails to close the tag or uses formatting like ```<thinking>
